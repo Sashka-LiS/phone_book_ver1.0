@@ -1,27 +1,33 @@
 import functions_for_book as func
+from pprint import pprint
+
 
 def main():
     my_response = None
 
-    func.create_db()
+    print(func.create_db())
 
     while my_response != '0':
         print('''\n1 - Добавить контакт
 2 - Показать телефонную книгу
 3 - Удалить контакт
+4 - Найти контакт
 0 - Выход''')
         
         my_response = input('--> ')
 
         if my_response == '1':
-            func.add_contact()
+            print(func.add_contact())
         elif my_response == '2':
             print('-' * 20)
-            print(func.show_book())
+            pprint(func.show_book())
             print('-' * 20)
         elif my_response == '3':
-            func.del_contact()
-
+            print(func.del_contact())
+        elif my_response == '4':
+            print('-' * 20)
+            pprint(func.find_contact())
+            print('-' * 20)
 
 
 if __name__ == '__main__':
