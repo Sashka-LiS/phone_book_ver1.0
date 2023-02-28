@@ -18,16 +18,28 @@ def main():
 
         if my_response == '1':
             print(func.add_contact())
+
         elif my_response == '2':
-            print('-' * 20)
+            print('-' * 30)
             pprint(func.show_book())
-            print('-' * 20)
+            print('-' * 30)
+
         elif my_response == '3':
             print(func.del_contact())
+
         elif my_response == '4':
-            print('-' * 20)
             pprint(func.find_contact())
-            print('-' * 20)
+        
+        elif my_response == '0':
+            print('-' * 30)
+            print('Хорошего дня!')
+            print('-' * 30)
+
+        else:
+            print('-' * 30)
+            print('Такой команды нет.')
+            print('-' * 30)
+            
 
 
 if __name__ == '__main__':
