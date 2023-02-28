@@ -14,7 +14,8 @@ def create_db():
                     id_contact INTEGER PRIMARY KEY,
                     фамилия TEXT,
                     имя TEXT NOT NULL,
-                    отчество TEXT
+                    отчество TEXT,
+                    Email TEXT
                 );
 
                 CREATE TABLE IF NOT EXISTS номера
@@ -36,32 +37,42 @@ def create_db():
 
 def add_contact():
 
-    min_simbols = 1
-    surname = input('Фамилия --> ')
-
-    name = input('Имя --> ')
-    while len(name) < min_simbols:
-        print('Это поле не может быть пустым.')
-        name = input('Имя --> ')
-
-    father_name = input('Отчество --> ')
-
-    number = input('Номер телефона --> ')
-    while number[0] != '+' and number[0] != '8':
-        print('Формат номера должен быть "+7..." или "8..."')
-        number = input('Номер телефона --> ')
-
-    home_number = input('Домашний номер --> ')
-    work_number = input('Рабочий номер --> ')
-
-    values_for_contacts = [surname, name, father_name]
-    values_for_numbers = [number, home_number, work_number]
-
     try:
         phone_book = sq.connect(name_db)
         cursor = phone_book.cursor()
 
-        cursor.execute('INSERT INTO контакты(фамилия, имя, отчество) VALUES (?, ?, ?);', values_for_contacts)
+        min_simbols = 1
+        surname = input('Фамилия --> ')
+        name = input('Имя --> ')
+
+        while len(name) < min_simbols:
+            print('Это поле не может быть пустым.')
+            name = input('Имя --> ')
+
+        father_name = input('Отчество --> ')
+        email = input('Email --> ')
+
+        if email:
+            email_for_search = cursor.execute('SELECT email FROM контакты WHERE email LIKE ?', [email]).fetchone()
+            if email_for_search:
+                print('Такой Email уже есть в телефонной книге.')
+                
+
+        number = input('Номер телефона --> ')
+
+        while number[0] != '+' and number[0] != '8':
+            print('Формат номера должен быть "+7..." или "8..."')
+            number = input('Номер телефона --> ')
+
+
+
+        home_number = input('Домашний номер --> ')
+        work_number = input('Рабочий номер --> ')
+
+        values_for_contacts = [surname, name, father_name, email]
+        values_for_numbers = [number, home_number, work_number]
+
+        cursor.execute('INSERT INTO контакты(фамилия, имя, отчество, email) VALUES (?, ?, ?, ?);', values_for_contacts)
         cursor.execute('INSERT INTO номера (номер, домашний, рабочий) VALUES (?, ?, ?);', values_for_numbers)
 
         phone_book.commit()
@@ -72,7 +83,6 @@ def add_contact():
         phone_book.close()
     
     result = '\nКонтакт добавлен.'
-
     return result
 
 
@@ -81,12 +91,10 @@ def show_book():
     try:
         phone_book = sq.connect(name_db)
         cursor = phone_book.cursor()
-
-        cursor.execute('''SELECT фамилия, имя, отчество, номера.номер, номера.домашний, номера.рабочий 
+        cursor.execute('''SELECT фамилия, имя, отчество, email, номера.номер, номера.домашний, номера.рабочий 
                           FROM контакты 
                           JOIN номера ON контакты.id_contact = номера.id_number;
-                          ''')
-        
+                          ''')        
         tables = cursor.fetchall()
     except sq.Error as e:
         print('ERROR: ', e)
@@ -101,45 +109,43 @@ def del_contact():
 
     name = input('Имя контакта для удаления контакта --> ')
     names_for_del = [name]
-    
+
     try:
         phone_book = sq.connect(name_db)
         cursor = phone_book.cursor()
-
         cursor.execute('''SELECT id_contact, фамилия, имя, отчество, номера.номер, номера.домашний, номера.рабочий 
                           FROM контакты JOIN номера ON контакты.id_contact = номера.id_number 
                           WHERE имя = ?;''', names_for_del)
-        
+        print('-' * 20)
         pprint(cursor.fetchall())
-
+        print('-' * 20)
         select_id = int(input('Выбери ID контакта для удаления --> '))
         id_for_del = [select_id]
         cursor.execute('PRAGMA foreign_keys=on')
         cursor.execute('DELETE FROM контакты WHERE id_contact = ?', id_for_del)
-
         phone_book.commit()
     except sq.Error as e:
         print('ERROR: ', e)
     finally:
         cursor.close()
         phone_book.close()
-    
-    result = '\nКонтакт удален.'
 
+    result = '\nКонтакт удален.'
     return result
 
 
 def find_contact():
 
     print('''
-    Где искать контакт?
-    1 - Фамилия
-    2 - Имя
-    3 - Отчество
-    4 - Основной номер
-    5 - Домашний номер
-    6 - Рабочий
-    0 - Отмена''')
+Где искать контакт?
+
+1 - Фамилия
+2 - Имя
+3 - Отчество
+4 - Основной номер
+5 - Домашний номер
+6 - Рабочий
+0 - Отмена''')
 
     my_response = input('--> ')
 
@@ -191,8 +197,7 @@ def find_contact():
                               FROM контакты
                               JOIN номера ON контакты.id_contact = номера.id_number
                               WHERE отчество LIKE ?
-                              ''', value_for_find)
-            
+                              ''', value_for_find)            
             contacts = cursor.fetchall()
         except sq.Error as e:
             print('ERROR: ', e)
@@ -226,13 +231,11 @@ def find_contact():
         try:
             phone_book = sq.connect(name_db)
             cursor = phone_book.cursor()
-
             cursor.execute('''SELECT фамилия, имя, отчество, номера.номер, номера.домашний, номера.рабочий
                               FROM контакты
                               JOIN номера ON контакты.id_contact = номера.id_number
                               WHERE домашний LIKE ?
-                              ''', value_for_find)
-            
+                              ''', value_for_find)            
             contacts = cursor.fetchall()
         except sq.Error as e:
             print('ERROR: ', e)
@@ -247,13 +250,11 @@ def find_contact():
         try:
             phone_book = sq.connect(name_db)
             cursor = phone_book.cursor()
-
             cursor.execute('''SELECT фамилия, имя, отчество, номера.номер, номера.домашний, номера.рабочий
                               FROM контакты
                               JOIN номера ON контакты.id_contact = номера.id_number
                               WHERE рабочий LIKE ?
-                              ''', value_for_find)
-            
+                              ''', value_for_find)            
             contacts = cursor.fetchall()
         except sq.Error as e:
             print('ERROR: ', e)
