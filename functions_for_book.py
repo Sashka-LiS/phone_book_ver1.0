@@ -1,11 +1,19 @@
+# Все имена с заглавной буквы
+# Проверка на ввод правильной команды от пользователя
+# Ошибки при пустом вводе
+# Ошибка при пустом значении для удаления контакта
+# Один коннект. Минимум закрытий
 import sqlite3 as sq
 from pprint import pprint
 
-name_db = 'phone_book.db'
+
+db_name = 'phone_book.db'
+# db_connection = None
+
 
 def create_db():
 
-    with sq.connect(name_db) as phone_book:
+    with sq.connect(db_name) as phone_book:
         cursor = phone_book.cursor()
 
         query = ('''
@@ -35,36 +43,68 @@ def create_db():
     return result
 
 
+def get_db():
+    db_connection = sq.connect(db_name)
+    return db_connection
+
+
+# def db_cursor(phone_book=get_db()):
+#     cursor = phone_book.cursor()
+#     return cursor
+
+
+def execute_add_del(query, values, phone_book=get_db()):
+    cursor = phone_book.cursor()
+    cursor.execute(query, values)
+    phone_book.commit()
+
+
+def cursor_execute(query, values, phone_book=get_db()):
+    cursor = phone_book.cursor()
+    return cursor.execute(query, values)
+
+
+def is_valid_email(email, phone_book=get_db()):
+    if email == None or email == '':
+        return True
+    
+    cursor = phone_book.cursor()
+
+    exist_email = cursor.execute('SELECT email FROM контакты WHERE email LIKE ?', [email]).fetchone()
+    return exist_email is None
+
+
+def is_valid_name(name):
+    if not name:
+        return False
+    return True
+
+
+def is_valid_number(number):
+    if number[0] != '+' and number[0] != '8':
+            return False
+    return True
+
+
 def add_contact():
 
     try:
-        phone_book = sq.connect(name_db)
-        cursor = phone_book.cursor()
-
-        min_simbols = 1
         surname = input('Фамилия --> ')
         name = input('Имя --> ')
-
-        while len(name) < min_simbols:
+        while not is_valid_name(name):
             print('Это поле не может быть пустым.')
             name = input('Имя --> ')
 
         father_name = input('Отчество --> ')
         email = input('Email --> ')
-
-        if email:
-            email_for_search = cursor.execute('SELECT email FROM контакты WHERE email LIKE ?', [email]).fetchone()
-            if email_for_search:
-                print('Такой Email уже есть в телефонной книге.')
-                
+        while not is_valid_email(email):
+            print('Такой email уже есть в телефонной книге. Попробуте еще раз.')
+            email = input('Email --> ')
 
         number = input('Номер телефона --> ')
-
-        while number[0] != '+' and number[0] != '8':
+        while not is_valid_number(number):
             print('Формат номера должен быть "+7..." или "8..."')
             number = input('Номер телефона --> ')
-
-
 
         home_number = input('Домашний номер --> ')
         work_number = input('Рабочий номер --> ')
@@ -72,63 +112,51 @@ def add_contact():
         values_for_contacts = [surname, name, father_name, email]
         values_for_numbers = [number, home_number, work_number]
 
-        cursor.execute('INSERT INTO контакты(фамилия, имя, отчество, email) VALUES (?, ?, ?, ?);', values_for_contacts)
-        cursor.execute('INSERT INTO номера (номер, домашний, рабочий) VALUES (?, ?, ?);', values_for_numbers)
-
-        phone_book.commit()
+        execute_add_del('INSERT INTO контакты(фамилия, имя, отчество, email) VALUES (?, ?, ?, ?);', values_for_contacts)
+        execute_add_del('INSERT INTO номера (номер, домашний, рабочий) VALUES (?, ?, ?);', values_for_numbers)
     except sq.Error as e:
         print('ERROR: ', e)
-    finally:
-        cursor.close()
-        phone_book.close()
     
     result = '\nКонтакт добавлен.'
     return result
 
 
+
 def show_book():
 
     try:
-        phone_book = sq.connect(name_db)
-        cursor = phone_book.cursor()
-        cursor.execute('''SELECT фамилия, имя, отчество, email, номера.номер, номера.домашний, номера.рабочий 
+        query = ('''SELECT фамилия, имя, отчество, email, номера.номер, номера.домашний, номера.рабочий 
                           FROM контакты 
                           JOIN номера ON контакты.id_contact = номера.id_number;
-                          ''')        
-        tables = cursor.fetchall()
+                          ''')  
+        cursor = db_cursor(query)
+        contacts = cursor.fetchall()    
     except sq.Error as e:
         print('ERROR: ', e)
     finally:
         cursor.close()
-        phone_book.close()
+        
 
-    return tables
+    return contacts
 
 
 def del_contact():
 
-    name = input('Имя контакта для удаления контакта --> ')
-    names_for_del = [name]
-
     try:
-        phone_book = sq.connect(name_db)
-        cursor = phone_book.cursor()
-        cursor.execute('''SELECT id_contact, фамилия, имя, отчество, номера.номер, номера.домашний, номера.рабочий 
+        name = input('Имя контакта для удаления контакта --> ')
+        names_for_del = [name]
+        ('''SELECT id_contact, фамилия, имя, отчество, номера.номер, номера.домашний, номера.рабочий 
                           FROM контакты JOIN номера ON контакты.id_contact = номера.id_number 
                           WHERE имя = ?;''', names_for_del)
         print('-' * 20)
-        pprint(cursor.fetchall())
+        pprint(db_cursor().fetchall()) #!!!!!!!!!!
         print('-' * 20)
         select_id = int(input('Выбери ID контакта для удаления --> '))
         id_for_del = [select_id]
-        cursor.execute('PRAGMA foreign_keys=on')
-        cursor.execute('DELETE FROM контакты WHERE id_contact = ?', id_for_del)
-        phone_book.commit()
+        execute_add_del('PRAGMA foreign_keys=on')
+        execute_add_del('DELETE FROM контакты WHERE id_contact = ?', id_for_del)
     except sq.Error as e:
         print('ERROR: ', e)
-    finally:
-        cursor.close()
-        phone_book.close()
 
     result = '\nКонтакт удален.'
     return result
