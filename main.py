@@ -17,13 +17,13 @@ def main():
         my_response = input('--> ')
 
         if my_response == '1':
-            surname = input('Фамилия --> ')
-            name = input('Имя --> ')
+            surname = input('Фамилия --> ').title()
+            name = input('Имя --> ').title()
             while not func.is_valid_name(name):
                 print('Это поле не может быть пустым.')
                 name = input('Имя --> ')
 
-            father_name = input('Отчество --> ')
+            father_name = input('Отчество --> ').title()
             email = input('Email --> ')
             while not func.is_valid_email(email):
                 print('Такой email уже есть в телефонной книге. Попробуте еще раз.')
@@ -48,8 +48,11 @@ def main():
             func.show_book()
 
         elif my_response == '3':
-            names_del = input('Имя контакта --> ')
-            
+            names_del = input('Имя контакта --> ').title()
+            while not func.is_valid_value(names_del):
+                print('Поле не может быть пустым.')
+                names_del = input('Имя контакта --> ').title()
+
             func.del_contact([names_del])
 
             print('\nКонтакт удален.')
@@ -68,26 +71,26 @@ def main():
 0 - Отмена''')
                 response_finde = input(' --> ')
                 if response_finde == '1':
-                    surname = input('Фамилия контакта --> ')
+                    surname = input('Фамилия контакта --> ').title()
                     while not func.is_valid_value(surname):
                         print('Поле не может быть пустым.')
-                        surname = input('Фамилия контакта --> ')
+                        surname = input('Фамилия контакта --> ').title()
 
                     func.search_by_surname(surname)
             
                 elif response_finde == '2':
-                    name = input('Имя контакта --> ')
+                    name = input('Имя контакта --> ').title()
                     while not func.is_valid_value(name):
                         print('Поле не может быть пустым.')
-                        name = input('Имя контакта --> ')
+                        name = input('Имя контакта --> ').title()
 
                     func.search_by_name(name)
             
                 elif response_finde == '3':
-                    father_name = input('Отчество контакта --> ')
+                    father_name = input('Отчество контакта --> ').title()
                     while not func.is_valid_value(father_name):
                         print('Поле не может быть пустым.')
-                        father_name = input('Отчество контакта --> ')
+                        father_name = input('Отчество контакта --> ').title()
 
                     func.search_by_father_name(father_name)
 
@@ -114,9 +117,9 @@ def main():
                         work_number = input('Номер контакта --> ')
 
                     func.search_by_work_number(work_number)
+    func.exit()
+    print('\nХорошего дня!')
 
-            
-
-
+        
 if __name__ == '__main__':
     main()
