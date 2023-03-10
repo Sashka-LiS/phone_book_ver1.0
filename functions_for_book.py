@@ -1,14 +1,8 @@
-# Все имена с заглавной буквы
-# Проверка на ввод правильной команды от пользователя
-# Ошибки при пустом вводе
-# Ошибка при пустом значении для удаления контакта
-# Один коннект. Минимум закрытий
 import sqlite3 as sq
 from pprint import pprint
 
 
 db_name = 'phone_book.db'
-# db_connection = None
 
 
 def create_db():
@@ -48,8 +42,6 @@ def get_db():
     return db_connection
 
 
-
-
 def is_valid_email(email, phone_book=get_db()):
     if email == None or email == '':
         return True
@@ -57,6 +49,7 @@ def is_valid_email(email, phone_book=get_db()):
     cursor = phone_book.cursor()
 
     exist_email = cursor.execute('SELECT email FROM контакты WHERE email LIKE ?', [email]).fetchone()
+    cursor.close()
     return exist_email is None
 
 
@@ -84,7 +77,8 @@ def add_contact(values_contacts, values_numbers, phone_book=get_db()):
         cursor.execute('INSERT INTO контакты(фамилия, имя, отчество, email) VALUES (?, ?, ?, ?);', values_contacts)
         cursor.execute('INSERT INTO номера (номер, домашний, рабочий) VALUES (?, ?, ?);', values_numbers)
         phone_book.commit()
-        return True #Пусть возвращается id контакта.
+        cursor.close()
+        return True
 
 
 def show_book(phone_book=get_db()):
@@ -96,11 +90,11 @@ def show_book(phone_book=get_db()):
     print('*' * 80)
     pprint(cursor.fetchall())
     print('*' * 80)
+    cursor.close()
     return True
 
 
 def del_contact(names_del, phone_book=get_db()):
-        
         cursor = phone_book.cursor()
         cursor.execute('''SELECT id_contact, фамилия, имя, отчество, номера.номер, номера.домашний, номера.рабочий 
                           FROM контакты JOIN номера ON контакты.id_contact = номера.id_number 
@@ -116,6 +110,7 @@ def del_contact(names_del, phone_book=get_db()):
         cursor.execute('PRAGMA foreign_keys=on')
         cursor.execute('DELETE FROM контакты WHERE id_contact = ?', id_for_del)
         phone_book.commit()
+        cursor.close()
         return True
 
 
@@ -130,7 +125,7 @@ def search_by_surname(surname, phone_book=get_db()):
     print('*' * 80)
     pprint(cursor.fetchall())     
     print('*' * 80)
-
+    cursor.close()
     return True
 
 
@@ -145,7 +140,7 @@ def search_by_name(name, phone_book=get_db()):
     print('*' * 80)
     pprint(cursor.fetchall())     
     print('*' * 80)
-
+    cursor.close()
     return True
 
 
@@ -160,7 +155,7 @@ def search_by_father_name(father_name, phone_book=get_db()):
     print('*' * 80)
     pprint(cursor.fetchall())     
     print('*' * 80)
-
+    cursor.close()
     return True
 
 
@@ -175,8 +170,9 @@ def search_by_number(number, phone_book=get_db()):
     print('*' * 80)
     pprint(cursor.fetchall())     
     print('*' * 80)
-
+    cursor.close()
     return True
+
 
 def search_by_home_number(home_number, phone_book=get_db()):
     cursor = phone_book.cursor()
@@ -189,7 +185,7 @@ def search_by_home_number(home_number, phone_book=get_db()):
     print('*' * 80)
     pprint(cursor.fetchall())     
     print('*' * 80)
-
+    cursor.close()
     return True
 
 
@@ -204,36 +200,10 @@ def search_by_work_number(work_number, phone_book=get_db()):
     print('*' * 80)
     pprint(cursor.fetchall())     
     print('*' * 80)
-
+    cursor.close()
     return True
-#     elif response_finde == '6':
-#         work_number = input('Рабочий номер или часть рабочего номера контакта --> ')
-#         value_for_find = ['%' + work_number + '%']
-#         cursor.execute('''SELECT фамилия, имя, отчество, номера.номер, номера.домашний, номера.рабочий
-#                           FROM контакты
-#                           JOIN номера ON контакты.id_contact = номера.id_number
-#                           WHERE рабочий LIKE ?
-#                           ''', value_for_find)            
-        
-#         print('*' * 80)
-#         pprint(cursor.fetchall())
-#         print('*' * 80)
-    
-#     elif response_finde == '0':
-#         pass
-    
-#     else:
-#         print('Такой команды нет.')
-#         print('''
-# \nГде искать контакт?
-# 1 - Фамилия
-# 2 - Имя
-# 3 - Отчество
-# 4 - Основной номер
-# 5 - Домашний номер
-# 6 - Рабочий
-# 0 - Отмена
-#         ''')
-#         response_finde = input(' --> ')
-#         find_contact(response_finde, phone_book=get_db())
-#     return True
+
+
+def exit(phone_book=get_db()):
+     phone_book.close()
+     
