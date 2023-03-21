@@ -2,7 +2,7 @@ import sqlite3 as sq
 from pprint import pprint
 from colorama import init, Fore
 
-# Во всех функциях поиска добавить столб id_contact
+
 init(autoreset=True)
 
 GOOD_STR = Fore.GREEN
@@ -47,12 +47,12 @@ def get_db():
     return db_connection
 
 
+#**********************************************************************
 def is_valid_email(email, phone_book=get_db()):
     cursor = phone_book.cursor()
-
     if email == None or email == '':
         return True
-    exist_email = cursor.execute('SELECT email FROM контакты WHERE email LIKE ?', [email]).fetchone()
+    exist_email = cursor.execute('SELECT Email FROM контакты WHERE Email LIKE ?', [email]).fetchone()
     cursor.close()
     return exist_email is None
 
@@ -102,7 +102,8 @@ def show_book(phone_book=get_db()):
 
 def del_contact(names_del, phone_book=get_db()):
         cursor = phone_book.cursor()
-        cursor.execute('''SELECT id_contact, фамилия, имя, отчество, номера.номер, номера.домашний, номера.рабочий 
+        names_del = ['%' + names_del + '%']
+        cursor.execute('''SELECT id_contact, фамилия, имя, отчество, Email, номера.номер, номера.домашний, номера.рабочий 
                           FROM контакты JOIN номера ON контакты.id_contact = номера.id_number 
                           WHERE имя = ?;''', names_del)
         
@@ -110,8 +111,7 @@ def del_contact(names_del, phone_book=get_db()):
         pprint(cursor.fetchall())
         print('*' * 80)
 
-        select_id = int(input(INPUT_STR + 'Выбери ID контакта для удаления --> '))
-        id_for_del = [select_id]
+        id_for_del = [int(input(INPUT_STR + 'Выбери ID контакта для удаления --> '))]
 
         cursor.execute('PRAGMA foreign_keys=on')
         cursor.execute('DELETE FROM контакты WHERE id_contact = ?', id_for_del)
@@ -268,6 +268,13 @@ def update_email(new_email, id_for_update, phone_book=get_db()):
     cursor.close()
     print(GOOD_STR + 'Контакт обновлен.')
     return True
+
+
+def the_same_email(new_email, id_for_update, phone_book=get_db()):
+     cursor = phone_book.cursor()
+     old_email = cursor.execute('SELECT Email FROM контакты WHERE id_contact = ?;', [id_for_update]).fetchone()
+     cursor.close()
+     return new_email == old_email[0]
 
 
 def update_number(new_number, id_for_update, phone_book=get_db()):
