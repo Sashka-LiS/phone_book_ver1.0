@@ -54,7 +54,7 @@ def main():
                 print(WARNING_STR + 'Поле не может быть пустым.')
                 names_del = input(INPUT_STR + 'Имя контакта --> ').title()
 
-            func.del_contact([names_del])
+            func.del_contact(names_del)
 
             print(GOOD_STR + '\nКонтакт удален.')
 
@@ -129,6 +129,9 @@ def main():
                 name = input(INPUT_STR + 'Имя контакта --> ')
             func.search_by_name(name)
             id_for_update = int(input(INPUT_STR + 'ID контаткта --> ')) # ЕСЛИ НИЧЕГО НЕ ВВОДИТЬ
+            print('0 - Отмена')
+            if id_for_update == '0':
+                continue
             while colomn_for_update != '0':
                 print('''\nДанные для редактирования:
                 1 - Фамилия
@@ -156,12 +159,25 @@ def main():
                     new_father_name = input(INPUT_STR + 'Новое отчество --> ').title()
                     func.update_father_name(new_father_name, id_for_update)
                 
-                elif colomn_for_update == '4': # ЕСЛИ ВВЕСТИ ТАКОЙ ЖЕ ИМЭИЛ ЧТО И БЫЛ
-                    new_email = input(INPUT_STR + 'Новый email --> ')
-                    while not func.is_valid_email(new_email):
-                        print(WARNING_STR + 'Такой email уже есть в телефонной книге.')
+                elif colomn_for_update == '4':
+
+                    loop = True
+                    while loop:
                         new_email = input(INPUT_STR + 'Новый email --> ')
-                    func.update_email(new_email, id_for_update)
+                        if func.the_same_email(new_email, id_for_update):
+                            loop = False
+                            print('Вернуло True')
+                            break
+                        print('Вернуло False')
+                        if func.is_valid_email(new_email):
+                            loop = False
+                            func.update_email(new_email, id_for_update)
+
+                    # new_email = input(INPUT_STR + 'Новый email --> ')
+                    # while not func.is_valid_email(new_email) or not func.the_same_email(new_email, id_for_update):
+                    #     print(WARNING_STR + 'Такой email уже есть в телефонной книге.')
+                    #     new_email = input(INPUT_STR + 'Новый email --> ')
+                    # func.update_email(new_email, id_for_update)
                 
                 elif colomn_for_update == '5':
                     new_number = input(INPUT_STR + 'Новый номер --> ')
@@ -177,10 +193,6 @@ def main():
                 elif colomn_for_update == '7':
                     new_work_number = input(INPUT_STR + 'Новый рабочий номер --> ')
                     func.update_work_number(new_work_number, id_for_update)
-
-
-
-
 
     func.exit()
     print(GOOD_STR + '\nХорошего дня!')
