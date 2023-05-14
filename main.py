@@ -160,24 +160,15 @@ def main():
                     func.update_father_name(new_father_name, id_for_update)
                 
                 elif colomn_for_update == '4':
-
                     loop = True
                     while loop:
                         new_email = input(INPUT_STR + 'Новый email --> ')
                         if func.the_same_email(new_email, id_for_update):
                             loop = False
-                            print('Вернуло True')
                             break
-                        print('Вернуло False')
                         if func.is_valid_email(new_email):
                             loop = False
                             func.update_email(new_email, id_for_update)
-
-                    # new_email = input(INPUT_STR + 'Новый email --> ')
-                    # while not func.is_valid_email(new_email) or not func.the_same_email(new_email, id_for_update):
-                    #     print(WARNING_STR + 'Такой email уже есть в телефонной книге.')
-                    #     new_email = input(INPUT_STR + 'Новый email --> ')
-                    # func.update_email(new_email, id_for_update)
                 
                 elif colomn_for_update == '5':
                     new_number = input(INPUT_STR + 'Новый номер --> ')
