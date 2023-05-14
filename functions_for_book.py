@@ -47,7 +47,6 @@ def get_db():
     return db_connection
 
 
-#**********************************************************************
 def is_valid_email(email, phone_book=get_db()):
     cursor = phone_book.cursor()
     if email == None or email == '':
